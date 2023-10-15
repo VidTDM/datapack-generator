@@ -18,6 +18,21 @@
         "category": "Datapack Generator",
         "title": "Generate Datapack"
       }
+    ],
+    "configuration":[
+      {
+        "title": "DatapackGenerator",
+        "properties": {
+          "datapack-generator.openNewWindow": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "default": null,
+            "description": "Tells whether to open a new window or not."
+          }
+        }
+      }
     ]
   },
   "scripts": {
