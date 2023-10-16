@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import { render } from "mustache";
-//! ADD LINK AFTER PUBLISHING
 // TODO: Add create in same directory configuration
 /*
           "datapack-generator.createInThisDirectory": {

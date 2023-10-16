@@ -1,7 +1,9 @@
 {
   "name": "datapack-generator",
   "displayName": "Datapack Generator",
+  "publisher": "VidTDM",
   "description": "A simple generator for minecraft datapacks",
+  "repository": "VidTDM/datapack-generator",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.82.0"
