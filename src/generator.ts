@@ -1,19 +1,9 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import { render } from "mustache";
-// TODO: Add create in same directory configuration
-/*
-          "datapack-generator.createInThisDirectory": {
-            "type": [
-              "boolean"
-            ],
-            "default": false,
-            "description": "Tells whether to create the datapack in this directory or not."
-          }
-*/
 
-/* The above class is a TypeScript code that generates a Minecraft data pack with user-defined
-parameters. */
+/* The `Generator` class is a TypeScript class that generates a Minecraft data pack based on user input
+and VSCode configurations. */
 export default class Generator {
     private readonly configurations =
         vscode.workspace.getConfiguration("datapack-generator");
@@ -28,8 +18,8 @@ export default class Generator {
         this.input();
     }
     /**
-     * The below function takes user input from a VSCode input box and uses it to generate a name,
-     * namespace, description, and pack format for further processing.
+     * The `input` function prompts the user to enter values for name, namespace, description, and pack
+     * format, and then generates a result based on those values.
      */
     private input(): void {
         const input = vscode.window.showInputBox({
@@ -49,83 +39,137 @@ export default class Generator {
                 ? options[1].replace(/[^a-z]/gm, "").toLowerCase()
                 : this.NAMESPACE;
             const description: string = options[2]
-                ? options[2].replace(/\\\\/gm, "\\\\")
+                ? options[2]
                 : this.DESCRIPTION;
             const pack_format: number = options[3]
-                ? parseInt(options[3])
+                ? !Number.isNaN(parseInt(options[3]))
+                    ? parseInt(options[3])
+                    : this.LASTEST_PACK_FORMAT
                 : this.LASTEST_PACK_FORMAT;
 
             this.generate(name, namespace, description, pack_format);
         });
     }
     /**
-     * The function generates a Minecraft data pack with the given name, namespace, description, and pack format.
-     * @param {string} name - The name of the generated files and folders.
-     * @param {string} namespace - The `namespace` parameter is a string that represents the namespace of the Minecraft data pack.
-     * @param {string} description - A string that describes the purpose or content of the generated files.
-     * @param {number} pack_format - The `pack_format` parameter is a number that represents the format version of the pack. It is used to determine compatibility with different versions of Minecraft.
+     * The `generate` function creates a new Minecraft datapack with the specified name, namespace,
+     * description, and pack format.
+     * @param {string} name - The name of the generated project or folder.
+     * @param {string} namespace - The `namespace` parameter is a string that represents the namespace
+     * of the generated code. In this context, it is used to create the necessary directories and files
+     * for the Minecraft data pack.
+     * @param {string} description - A brief description of the generated code or project.
+     * @param {number} pack_format - The `pack_format` parameter is a number that represents the format
+     * version of the resource pack. It is used in the `pack.mcmeta` file to specify the version
+     * compatibility of the resource pack with Minecraft.
      */
-    // prettier-ignore
-    private generate(name: string, namespace: string, description: string, pack_format: number): void {
+    private generate(
+        name: string,
+        namespace: string,
+        description: string,
+        pack_format: number
+    ): void {
         const pack_mcmeta = render(
-            fs.
-                readFileSync(`${__dirname}\\..\\src\\templates\\pack.mcmeta.mst`)
+            fs
+                .readFileSync(
+                    `${__dirname}\\..\\src\\templates\\pack.mcmeta.mst`
+                )
                 .toString(),
             {
                 pack_format,
-                description
+                description,
             }
         );
         const load_json = render(
-            fs.
-                readFileSync(`${__dirname}\\..\\src\\templates\\load.json.mst`)
+            fs
+                .readFileSync(`${__dirname}\\..\\src\\templates\\load.json.mst`)
                 .toString(),
-                { namespace }
+            { namespace }
         );
         const tick_json = render(
-                fs
-                    .readFileSync(`${__dirname}\\..\\src\\templates\\tick.json.mst`)
-                    .toString(),
-                { namespace }
+            fs
+                .readFileSync(`${__dirname}\\..\\src\\templates\\tick.json.mst`)
+                .toString(),
+            { namespace }
         );
 
+        const createNewDir = this.configurations.createNewDirectory;
         // Generate Main Folders
-        this.vsfs.createDirectory(vscode.Uri.joinPath(this.folder, name));
-        this.vsfs.createDirectory(vscode.Uri.joinPath(this.folder, `${name}/data`));
+        if (createNewDir)
+            this.vsfs.createDirectory(vscode.Uri.joinPath(this.folder, name));
+        this.vsfs.createDirectory(
+            vscode.Uri.joinPath(this.folder, `${createNewDir ? name : ""}/data`)
+        );
         this.vsfs.writeFile(
-            vscode.Uri.joinPath(this.folder, `${name}/pack.mcmeta`),
+            vscode.Uri.joinPath(
+                this.folder,
+                `${createNewDir ? name : ""}/pack.mcmeta`
+            ),
             new TextEncoder().encode(pack_mcmeta)
         );
 
         // Generate Tags
-        this.vsfs.createDirectory(vscode.Uri.joinPath(this.folder, `${name}/data/minecraft/tag/functions`));
+        this.vsfs.createDirectory(
+            vscode.Uri.joinPath(
+                this.folder,
+                `${createNewDir ? name : ""}/data/minecraft/tag/functions`
+            )
+        );
         this.vsfs.writeFile(
-            vscode.Uri.joinPath(this.folder, `${name}/data/minecraft/tag/functions/load.json`),
+            vscode.Uri.joinPath(
+                this.folder,
+                `${
+                    createNewDir ? name : ""
+                }/data/minecraft/tag/functions/load.json`
+            ),
             new TextEncoder().encode(load_json)
         );
         this.vsfs.writeFile(
-            vscode.Uri.joinPath(this.folder, `${name}/data/minecraft/tag/functions/tick.json`),
+            vscode.Uri.joinPath(
+                this.folder,
+                `${
+                    createNewDir ? name : ""
+                }/data/minecraft/tag/functions/tick.json`
+            ),
             new TextEncoder().encode(tick_json)
         );
 
         // Generate Functions
-        this.vsfs.createDirectory(vscode.Uri.joinPath(this.folder, `${name}/data/${namespace}/functions`));
+        this.vsfs.createDirectory(
+            vscode.Uri.joinPath(
+                this.folder,
+                `${createNewDir ? name : ""}/data/${namespace}/functions`
+            )
+        );
         this.vsfs.writeFile(
-            vscode.Uri.joinPath(this.folder, `${name}/data/${namespace}/functions/load.mcfunction`),
+            vscode.Uri.joinPath(
+                this.folder,
+                `${
+                    createNewDir ? name : ""
+                }/data/${namespace}/functions/load.mcfunction`
+            ),
             new Uint8Array([])
         );
         this.vsfs.writeFile(
-            vscode.Uri.joinPath(this.folder, `${name}/data/${namespace}/functions/tick.mcfunction`),
+            vscode.Uri.joinPath(
+                this.folder,
+                `${
+                    createNewDir ? name : ""
+                }/data/${namespace}/functions/tick.mcfunction`
+            ),
             new Uint8Array([])
         );
 
         this.openNewWindow(vscode.Uri.joinPath(this.folder, name));
     }
     /**
-     * The function `openNewWindow` checks the user's configuration and prompts them to open a new window or opens a new window directly based on the configuration.
-     * @param path - The `path` parameter is the path to the file or directory that you want to open in a new window. It is of type `vscode.Uri`.
+     * The function `openNewWindow` checks the user's configuration and prompts them to open a new
+     * window or opens a new window automatically based on the configuration.
+     * @param path - The path parameter is of type vscode.Uri and represents the file path of the
+     * datapack that needs to be opened in a new window.
+     * @return The function does not have a return type, so it does not explicitly return anything.
      */
     private openNewWindow(path: vscode.Uri): void {
+        if (!this.configurations.createNewDirectory) return;
         switch (this.configurations.openNewWindow) {
             case null:
                 vscode.window

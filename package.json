@@ -5,6 +5,7 @@
   "description": "A simple generator for minecraft datapacks",
   "repository": "VidTDM/datapack-generator",
   "version": "0.0.1",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.82.0"
   },
@@ -21,7 +22,7 @@
         "title": "Generate Datapack"
       }
     ],
-    "configuration":[
+    "configuration": [
       {
         "title": "DatapackGenerator",
         "properties": {
@@ -32,6 +33,13 @@
             ],
             "default": null,
             "description": "Tells whether to open a new window or not."
+          },
+          "datapack-generator.createNewDirectory": {
+            "type": [
+              "boolean"
+            ],
+            "default": true,
+            "description": "Tells whether to create the datapack in this directory or not."
           }
         }
       }
